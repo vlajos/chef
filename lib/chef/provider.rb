@@ -35,19 +35,23 @@ class Chef
     attr_reader :recipe_name
     attr_reader :cookbook_name
 
-    #--
-    # TODO: this should be a reader, and the action should be passed in the
-    # constructor; however, many/most subclasses override the constructor so
-    # changing the arity would be a breaking change. Change this at the next
-    # break, e.g., Chef 11.
-    attr_accessor :action
+    attr_reader :action
 
-    def initialize(new_resource, run_context)
+    # @TODO Chef 13: Make action a required parameter.
+    # action is an optional parameter for Chef 12 so custom provider
+    # classes can be updated.
+    def initialize(new_resource, run_context, action=nil)
       @new_resource = new_resource
-      @action = action
       @current_resource = nil
       @run_context = run_context
       @converge_actions = nil
+
+      if action.nil?
+        Chef::Log.warn("Initializing a provider without an action parameter is deprecated" +
+          " in Chef 12 and will be removed in Chef 13. It is recommended that you update" +
+          " custom providers to reflect these changes.")
+      end
+      @action = action
 
       @recipe_name = nil
       @cookbook_name = nil
@@ -93,11 +97,14 @@ class Chef
       run_context.events
     end
 
+    # @TODO Chef 13: Remove optional parameter action.
     def run_action(action=nil)
-      @action = action unless action.nil?
-
-      # TODO: it would be preferable to get the action to be executed in the
-      # constructor...
+      unless action.nil?
+        Chef::Log.warn("Specifying an action to #run_action is deprecated in" +
+          " Chef 12 and will be removed in Chef 13. An action should be supplied" +
+          " to the provider constructor.")
+        @action = action
+      end
 
       # user-defined LWRPs may include unsafe load_current_resource methods that cannot be run in whyrun mode
       if !whyrun_mode? || whyrun_supported?
