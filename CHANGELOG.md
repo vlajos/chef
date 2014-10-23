@@ -138,6 +138,7 @@
 
 ### Chef Contributions
 
+* ruby 1.9.3 support is dropped
 * Recipe definition now returns the retval of the definition
 * Add support for Windows 10 to version helper.
 * `dsc_script` resource should honor configuration parameters when `configuration_data_script` is not set (Issue #2209)
